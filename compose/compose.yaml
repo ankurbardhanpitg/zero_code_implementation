@@ -1,0 +1,14 @@
+# Main Docker Compose file for OpenTelemetry Course
+# This file includes the observability stack and application
+
+include:
+  - compose.observability.yaml
+
+# Shared networks for all services
+networks:
+  observability:
+    driver: bridge
+    name: observability
+  app:
+    driver: bridge
+    name: app
