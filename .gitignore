@@ -1,3 +1,6 @@
 # App dependencies
 app/node_modules/
 app2/node_modules/
+app3/.venv/
+app3/**/__pycache__/
+*.pyc
