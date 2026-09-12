@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "address": "12 MG Road",
+    "city": "Bengaluru",
+    "price": 18500000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 2,
+    "address": "45 Marine Drive",
+    "city": "Mumbai",
+    "price": 42000000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 3,
+    "address": "8 Park Street",
+    "city": "Kolkata",
+    "price": 9800000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 4,
+    "address": "21 Connaught Place",
+    "city": "Delhi",
+    "price": 27500000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 5,
+    "address": "3 Banjara Hills",
+    "city": "Hyderabad",
+    "price": 15200000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 6,
+    "address": "77 Anna Salai",
+    "city": "Chennai",
+    "price": 11900000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 7,
+    "address": "9 Koregaon Park",
+    "city": "Pune",
+    "price": 13400000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 8,
+    "address": "16 Civil Lines",
+    "city": "Jaipur",
+    "price": 7600000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 9,
+    "address": "4 Sector 17",
+    "city": "Chandigarh",
+    "price": 8900000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  },
+  {
+    "id": 10,
+    "address": "31 Panampilly Nagar",
+    "city": "Kochi",
+    "price": 10200000,
+    "createdAt": "2026-09-12T05:38:24.389Z"
+  }
+]

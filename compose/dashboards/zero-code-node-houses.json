@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "RED metrics, runtime, traces, and logs for any app that exports OTLP to this collector. Pick a service name to filter all panels (zero-code-node, zero-code-node-houses, or All).",
+  "description": "RED metrics, runtime, traces, and logs for the House API (OTEL_SERVICE_NAME=zero-code-node-houses).",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -260,7 +260,7 @@
         "legend": { "calcs": ["mean", "lastNotNull"], "displayMode": "list", "placement": "right", "showLegend": true },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
-      "title": "Request rate by service (all apps)",
+      "title": "Request rate (this service vs others)",
       "type": "timeseries",
       "targets": [
         {
@@ -846,26 +846,17 @@
   "preload": false,
   "refresh": "5s",
   "schemaVersion": 39,
-  "tags": ["opentelemetry", "prometheus", "loki", "tempo"],
+  "tags": ["opentelemetry", "prometheus", "loki", "tempo", "houses"],
   "templating": {
     "list": [
       {
-        "allValue": ".*",
-        "current": { "selected": true, "text": "zero-code-node", "value": "zero-code-node" },
-        "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "definition": "label_values(traces_spanmetrics_calls_total, service_name)",
-        "hide": 0,
-        "includeAll": true,
+        "current": { "selected": true, "text": "zero-code-node-houses", "value": "zero-code-node-houses" },
+        "hide": 2,
         "label": "Service",
-        "multi": false,
         "name": "service",
-        "options": [],
-        "query": { "qryType": 1, "query": "label_values(traces_spanmetrics_calls_total, service_name)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
-        "refresh": 2,
-        "regex": "",
+        "query": "zero-code-node-houses",
         "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
+        "type": "constant"
       },
       {
         "allValue": ".*",
@@ -890,7 +881,7 @@
   "time": { "from": "now-15m", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "OpenTelemetry services",
-  "uid": "zero-code-node",
-  "version": 2
+  "title": "OpenTelemetry — houses",
+  "uid": "zero-code-node-houses",
+  "version": 1
 }
