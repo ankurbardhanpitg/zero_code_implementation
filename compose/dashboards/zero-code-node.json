@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "RED metrics, runtime, traces, and logs for any app that exports OTLP to this collector. Pick a service name to filter all panels (zero-code-node, zero-code-node-houses, or All).",
+  "description": "RED metrics, runtime, traces, and logs for any app that exports OTLP to this collector. Pick a service name to filter all panels (zero-code-node, zero-code-node-houses, zero-code-python, or All).",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
