@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "address": "12 MG Road, Bengaluru",
+    "owner": "Aarav Sharma",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 2,
+    "address": "88 Linking Road, Mumbai",
+    "owner": "Priya Patel",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 3,
+    "address": "5 Connaught Place, New Delhi",
+    "owner": "Rohan Mehta",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 4,
+    "address": "21 Anna Salai, Chennai",
+    "owner": "Ananya Singh",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 5,
+    "address": "17 Banjara Hills, Hyderabad",
+    "owner": "Vikram Reddy",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 6,
+    "address": "9 FC Road, Pune",
+    "owner": "Neha Gupta",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 7,
+    "address": "3 Marine Drive, Kochi",
+    "owner": "Arjun Nair",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 8,
+    "address": "64 Residency Road, Bengaluru",
+    "owner": "Sneha Iyer",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 9,
+    "address": "11 Law Garden, Ahmedabad",
+    "owner": "Karan Joshi",
+    "createdAt": "2026-09-26T00:00:00Z"
+  },
+  {
+    "id": 10,
+    "address": "2 Salt Lake, Kolkata",
+    "owner": "Meera Das",
+    "createdAt": "2026-09-26T00:00:00Z"
+  }
+]

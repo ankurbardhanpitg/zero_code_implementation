@@ -60,6 +60,7 @@
         },
         "overrides": []
       },
+      "description": "RED Rate. Metric: traces_spanmetrics_calls_total (collector spanmetrics). Inbound server spans per second for $service and $route.",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
       "id": 1,
       "options": {
@@ -107,6 +108,7 @@
         },
         "overrides": []
       },
+      "description": "RED Errors. Metric: traces_spanmetrics_calls_total. Fraction of server spans with HTTP 4xx or 5xx. Yellow ≥1%, red ≥5%.",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
       "id": 2,
       "options": {
@@ -151,6 +153,7 @@
         },
         "overrides": []
       },
+      "description": "RED Duration. Metric: traces_spanmetrics_duration_milliseconds_bucket. 95th percentile server-span latency. Yellow ≥50ms, red ≥200ms.",
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
       "id": 3,
       "options": {
@@ -196,6 +199,7 @@
         },
         "overrides": []
       },
+      "description": "RED Duration. Metric: traces_spanmetrics_duration_milliseconds_bucket. 99th percentile server-span latency. Yellow ≥100ms, red ≥500ms.",
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
       "id": 4,
       "options": {
@@ -225,7 +229,7 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "description": "Every app that sends traces to this collector appears here. Use the Service dropdown above to focus the rest of the dashboard.",
+      "description": "Metric: traces_spanmetrics_calls_total. Request rate grouped by service_name (not filtered by $service). Every app that sends traces to this collector appears here. Use the Service dropdown to focus the rest of the dashboard.",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -311,6 +315,7 @@
         },
         "overrides": []
       },
+      "description": "Metrics: traces_spanmetrics_calls_total (collector) vs http_server_request_duration_seconds_count (app SDK). Overlay to confirm spanmetrics rate matches native HTTP metrics.",
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 13 },
       "id": 7,
       "options": {
@@ -370,6 +375,7 @@
         },
         "overrides": []
       },
+      "description": "Metric: traces_spanmetrics_calls_total. 4xx+5xx rate divided by total server-span rate for $service and $route.",
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 13 },
       "id": 8,
       "options": {
@@ -419,6 +425,7 @@
         },
         "overrides": []
       },
+      "description": "Metric: traces_spanmetrics_duration_milliseconds_bucket. histogram_quantile p50 / p95 / p99. Exemplars on these series jump to Tempo traces.",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 13 },
       "id": 9,
       "options": {
@@ -487,6 +494,7 @@
         },
         "overrides": []
       },
+      "description": "Metric: traces_spanmetrics_calls_total. Request rate broken down by HTTP method, route, and status code.",
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 21 },
       "id": 10,
       "options": {
@@ -537,6 +545,7 @@
         },
         "overrides": []
       },
+      "description": "Metric: traces_spanmetrics_duration_milliseconds_bucket. p95 latency per http_route so a slow endpoint stands out.",
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 21 },
       "id": 11,
       "options": {
@@ -587,6 +596,7 @@
         },
         "overrides": []
       },
+      "description": "Metric: traces_spanmetrics_calls_total. Stacked request rate by http_response_status_code.",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 21 },
       "id": 12,
       "options": {
@@ -643,6 +653,7 @@
         },
         "overrides": []
       },
+      "description": "Metrics: nodejs_eventloop_delay_p50_seconds and nodejs_eventloop_delay_p99_seconds. High delay means the Node.js event loop is blocked. Empty for non-Node services.",
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 30 },
       "id": 14,
       "options": {
@@ -700,6 +711,7 @@
         },
         "overrides": []
       },
+      "description": "Metrics: process_resident_memory_bytes (RSS) and v8js_memory_heap_used_bytes (V8 heap). Rising heap + RSS often means a JS leak; rising RSS with a flat heap often means native/external memory.",
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 30 },
       "id": 15,
       "options": {
@@ -757,6 +769,7 @@
         },
         "overrides": []
       },
+      "description": "Metrics: rate(process_cpu_seconds_total) (CPU cores used) and nodejs_eventloop_utilization_ratio (how busy the event loop is). ELU near 1.0 means almost no idle time.",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 30 },
       "id": 16,
       "options": {
@@ -793,7 +806,7 @@
     },
     {
       "datasource": { "type": "tempo", "uid": "tempo" },
-      "description": "Recent traces for the selected service. Click a Trace ID to open the waterfall. Spanmetrics exemplars on the graphs above also jump to Tempo.",
+      "description": "Tempo TraceQL (not a Prometheus metric): { resource.service.name =~ \"${service}\" }. Click a Trace ID to open the waterfall. Spanmetrics exemplars on the graphs above also jump to Tempo.",
       "gridPos": { "h": 12, "w": 14, "x": 0, "y": 39 },
       "id": 18,
       "options": {
@@ -817,7 +830,7 @@
     },
     {
       "datasource": { "type": "loki", "uid": "loki" },
-      "description": "OTLP logs for the selected service. console.log is not captured; use pino or winston (or another instrumented logger) so this panel fills.",
+      "description": "Loki log stream (not a Prometheus metric): {service_name=~\"$service\"}. OTLP logs only — console.log is not captured; use pino or winston (or another instrumented logger) so this panel fills.",
       "gridPos": { "h": 12, "w": 10, "x": 14, "y": 39 },
       "id": 19,
       "options": {
@@ -892,5 +905,5 @@
   "timezone": "browser",
   "title": "OpenTelemetry services",
   "uid": "zero-code-node",
-  "version": 2
+  "version": 3
 }

@@ -1,0 +1,501 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Manual tracing for the Flask house API (app4, service manual-python). Server spans and child spans are created in application code. No auto-instrumentation, no runtime metrics, no logs.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "bolt",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Explore traces",
+      "tooltip": "Open Tempo Explore for manual-python",
+      "type": "link",
+      "url": "/explore?left=%7B%22datasource%22%3A%22tempo%22%2C%22queries%22%3A%5B%7B%22queryType%22%3A%22traceql%22%2C%22query%22%3A%22%7B%20resource.service.name%20%3D%20%5C%22manual-python%5C%22%20%7D%22%7D%5D%7D"
+    }
+  ],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Inbound HTTP spans per second. Span kind SERVER, written by server_span() in app4. Filtered by the Route dropdown.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$route\"}[$__rate_interval]))",
+          "legendFormat": "requests",
+          "refId": "A"
+        }
+      ],
+      "title": "Server request rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Share of server spans with HTTP 404. The traffic script calls GET /houses/999 so this stays above zero.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.05 },
+              { "color": "red", "value": 0.2 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$route\", http_response_status_code=\"404\"}[$__rate_interval])) / clamp_min(sum(rate(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$route\"}[$__rate_interval])), 1e-9)",
+          "legendFormat": "404",
+          "refId": "A"
+        }
+      ],
+      "title": "Not found (404)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "95th percentile duration of the SERVER span only. Child span time is inside this number, not added on top.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_duration_milliseconds_bucket{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$route\"}[$__rate_interval])))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "title": "Server latency p95",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Internal spans per second from store.py (houses.list, houses.get_by_id, houses.read). Filtered by the Manual span dropdown.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_INTERNAL\", span_name=~\"$span\"}[$__rate_interval]))",
+          "legendFormat": "child spans",
+          "refId": "A"
+        }
+      ],
+      "title": "Manual child spans",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 4 },
+      "id": 5,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false, "showMiniMap": false },
+        "content": "Spans are created in **app4** code. Service name is fixed to `manual-python`.\n\n**GET /houses** (server)\n- `houses.list`\n  - `houses.read`\n\n**GET /houses/&lt;id&gt;** (server)\n- `houses.get_by_id` with `house.id` and `house.found`\n  - `houses.read`\n\nOpen a trace to see `house.id` and `house.found`. Those attributes are not Prometheus labels.\n\n**Route** filters server panels. **Manual span** filters child-span panels.",
+        "mode": "markdown"
+      },
+      "title": "Span tree written in code",
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Every span name for manual-python, server and internal together. This is the hand-written tree over time.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 4 },
+      "id": 6,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "sum by (span_kind, span_name) (rate(traces_spanmetrics_calls_total{service_name=\"manual-python\"}[$__rate_interval]))",
+          "legendFormat": "{{span_kind}} {{span_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Rate by span name",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "id": 7,
+      "title": "Server spans",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Server span rate split by method, route template, and status code.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "id": 8,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "sum by (http_request_method, http_route, http_response_status_code) (rate(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$route\"}[$__rate_interval]))",
+          "legendFormat": "{{http_request_method}} {{http_route}} {{http_response_status_code}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Server spans by route and status",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "p95 server-span duration per http.route.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "id": 9,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum by (le, http_route) (rate(traces_spanmetrics_duration_milliseconds_bucket{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$route\"}[$__rate_interval])))",
+          "legendFormat": "{{http_route}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Server p95 by route",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+      "id": 10,
+      "title": "Child spans from store.py",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Rate of internal spans. houses.read runs under both houses.list and houses.get_by_id, so it is the busiest child.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+      "id": 11,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "expr": "sum by (span_name) (rate(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_INTERNAL\", span_name=~\"$span\"}[$__rate_interval]))",
+          "legendFormat": "{{span_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Child span rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "p95 duration of each internal span. Compare houses.read with the operation that called it.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+      "id": 12,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum by (le, span_name) (rate(traces_spanmetrics_duration_milliseconds_bucket{service_name=\"manual-python\", span_kind=\"SPAN_KIND_INTERNAL\", span_name=~\"$span\"}[$__rate_interval])))",
+          "legendFormat": "{{span_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Child span p95",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 },
+      "id": 13,
+      "title": "Tempo traces",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "tempo", "uid": "tempo" },
+      "description": "Traces for manual-python, optionally filtered by http.route. Click a Trace ID for the waterfall.",
+      "gridPos": { "h": 12, "w": 12, "x": 0, "y": 31 },
+      "id": 14,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "tempo", "uid": "tempo" },
+          "limit": 30,
+          "query": "{ resource.service.name = \"manual-python\" && span.http.route =~ \"${route}\" }",
+          "queryType": "traceql",
+          "refId": "A",
+          "tableType": "traces"
+        }
+      ],
+      "title": "Recent server traces",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "tempo", "uid": "tempo" },
+      "description": "Traces that contain the selected manual span name (houses.list, houses.get_by_id, or houses.read).",
+      "gridPos": { "h": 12, "w": 12, "x": 12, "y": 31 },
+      "id": 15,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "tempo", "uid": "tempo" },
+          "limit": 30,
+          "query": "{ resource.service.name = \"manual-python\" && name =~ \"${span}\" }",
+          "queryType": "traceql",
+          "refId": "A",
+          "tableType": "traces"
+        }
+      ],
+      "title": "Traces containing the manual span",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["opentelemetry", "manual", "flask"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\"}, http_route)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Route",
+        "multi": false,
+        "name": "route",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_SERVER\"}, http_route)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_INTERNAL\"}, span_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Manual span",
+        "multi": false,
+        "name": "span",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(traces_spanmetrics_calls_total{service_name=\"manual-python\", span_kind=\"SPAN_KIND_INTERNAL\"}, span_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Manual instrumentation — houses",
+  "uid": "manual-python",
+  "version": 1
+}
