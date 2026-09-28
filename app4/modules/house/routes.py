@@ -1,3 +1,24 @@
+"""House routes.
+
+Each view is wrapped with server_span() at registration time. That is the
+same wrap as @server_span on a function defined in this file; it is applied
+by hand here because the view callables live in controller.py.
+
+The string passed to server_span is the http.route attribute and the span
+name suffix. It includes the blueprint prefix, because the decorator does
+not see how the blueprint is mounted in app.py.
+
+  GET /houses
+      server span "GET /houses"
+        └── houses.list          (store.get_all)
+              └── houses.read
+
+  GET /houses/<int:house_id>
+      server span "GET /houses/<int:house_id>"
+        └── houses.get_by_id     (store.get_by_id)
+              └── houses.read
+"""
+
 from flask import Blueprint
 
 from tracing import server_span

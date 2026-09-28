@@ -1,3 +1,24 @@
+"""House persistence, and the INTERNAL child spans under the SERVER span.
+
+The module-level tracer is created at import time, which is why app.py calls
+init_tracing() before importing the house blueprint. Scope name "app4.house"
+shows up as the instrumentation library on these spans. Kind is the default,
+INTERNAL.
+
+Each function uses start_as_current_span(), so the span it opens is a child
+of whatever is current (the SERVER span from server_span) and becomes current
+itself for nested calls. That produces:
+
+  houses.list
+    └── houses.read          attributes: house.count
+
+  houses.get_by_id           attributes: house.id, house.found
+    └── houses.read          attributes: house.count
+
+Ending a span is the end of its with-block. Returning from inside the block
+still exits it, so house.found is recorded before houses.get_by_id ends.
+"""
+
 import json
 from pathlib import Path
 
