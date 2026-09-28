@@ -1,6 +1,6 @@
 # Flask House API (app4)
 
-A small Flask house API with **manual OpenTelemetry tracing only**. Nothing is auto-instrumented. The app creates the tracer and every span itself, using the same pipeline shape as `trace_solution` (`Resource`, `TracerProvider`, `BatchSpanProcessor`), and exports spans with OTLP HTTP to the local collector.
+A small Flask house API with **manual OpenTelemetry tracing and metrics**. Nothing is auto-instrumented. The app creates the tracer and every span itself, using the same pipeline shape as `trace_solution` (`Resource`, `TracerProvider`, `BatchSpanProcessor`), and exports spans with OTLP HTTP to the local collector. Metrics use a separate `MeterProvider` in `metrics.py` and export to the same collector.
 
 `GET /houses` and `GET /houses/<id>` each open a server span. The store opens child spans under that request.
 
@@ -74,7 +74,7 @@ From the `app4` folder, with the virtual environment active:
 python app.py
 ```
 
-`app.py` calls `init_tracing()` before serving requests. There is no `start.py` and no Flask auto-instrumentation.
+`app.py` calls `init_tracing()` and `init_metrics()` before serving requests. There is no `start.py` and no Flask auto-instrumentation.
 
 The server listens on [http://localhost:5002](http://localhost:5002).
 
@@ -131,11 +131,11 @@ The script repeatedly calls `GET /houses`, `GET /houses/<id>` for each house, an
 | `BASE_URL` | `http://localhost:5002` | API base URL |
 | `INTERVAL_MS` | `500` | Delay between request loops, in ms |
 
-## 5. Dashboard
+## 5. Dashboards
 
-Open [http://localhost:3001](http://localhost:3001) and the dashboard **Manual instrumentation — houses** (folder **OpenTelemetry**).
+Open [http://localhost:3001](http://localhost:3001). Two dashboards in the **OpenTelemetry** folder are for this app. Both are separate from **OpenTelemetry services**.
 
-It is separate from **OpenTelemetry services**. Every panel is fixed to `service.name` = `manual-python`. Use **Route** for the HTTP server spans and **Manual span** for the child spans written in `store.py`.
+**Manual instrumentation — houses** is the trace view. Every panel is fixed to `service.name` = `manual-python`. Use **Route** for the HTTP server spans and **Manual span** for the child spans written in `store.py`.
 
 After traffic is flowing you should see:
 
@@ -149,7 +149,9 @@ After traffic is flowing you should see:
 
 Click a trace in the Tempo panels to open the waterfall. `house.id` and `house.found` are attributes on `houses.get_by_id`.
 
-This app exports traces only. The request-rate panels are built by the collector from those spans. There is no log pipeline, so this dashboard has no Loki panel.
+**Manual metrics — houses** reads the instruments from `metrics.py`: `traffic_volume`, `error_rate`, `http.server.request.duration`, CPU, and memory. Use **Route** there to filter the HTTP panels. Process panels cover the whole process.
+
+The request-rate panels on the trace dashboard are built by the collector from spans. The metrics dashboard uses the counters and histogram recorded in `app.py`. There is no log pipeline, so neither dashboard has a Loki panel.
 
 ## API endpoints
 

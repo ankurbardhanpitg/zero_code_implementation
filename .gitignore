@@ -6,3 +6,5 @@ app3/**/__pycache__/
 app4/.venv/
 app4/**/__pycache__/
 *.pyc
+.DS_Store
+.venv/

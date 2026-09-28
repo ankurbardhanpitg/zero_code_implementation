@@ -1,11 +1,12 @@
 # Grafana dashboards
 
-This folder is mounted into Grafana. Two dashboards are provisioned into the **OpenTelemetry** folder:
+This folder is mounted into Grafana. Three dashboards are provisioned into the **OpenTelemetry** folder:
 
 | File | Title | What it shows |
 | --- | --- | --- |
 | `zero-code-node.json` | **OpenTelemetry services** | Any app that exports OTLP. Multi-service RED, Node.js runtime, Tempo, and Loki. |
-| `manual-python.json` | **Manual instrumentation — houses** | Only `app4` (`service.name` = `manual-python`). Server spans and the child spans written in code. No runtime metrics and no logs. |
+| `manual-python.json` | **Manual instrumentation — houses** | Only `app4` (`service.name` = `manual-python`). Server spans and the child spans written in code. Built from spanmetrics, not from the app's own instruments. |
+| `manual-python-metrics.json` | **Manual metrics — houses** | Only `app4` (`job` = `manual-python`). Counters, latency histogram, and process gauges recorded in `app4/metrics.py`. |
 
 ## OpenTelemetry services
 
@@ -219,3 +220,33 @@ The same spanmetrics series are used (`traces_spanmetrics_calls_total` and `trac
 | Traces containing the manual span | Tempo, filtered by child span name |
 
 `house.id` and `house.found` are attributes on the `houses.get_by_id` span. They show up in the Tempo waterfall. They are not Prometheus labels. This app does not export logs.
+
+## Manual metrics — houses
+
+`manual-python-metrics.json` (uid `manual-python-metrics`) is the metrics view for **app4**. It queries the series the app records itself. It does not use `traces_spanmetrics_*`.
+
+The collector's Prometheus exporter turns the OpenTelemetry names into these series. `job` is `service.name` (`manual-python`).
+
+| Instrument in `metrics.py` | Prometheus series |
+|---|---|
+| `traffic_volume` | `traffic_volume_request_total` |
+| `error_rate` | `error_rate_request_total` |
+| `http.server.request.duration` | `http_server_request_duration_seconds_bucket` |
+| `process.cpu.utilization` | `process_cpu_utilization_ratio` |
+| `process.memory.usage` | `process_memory_usage_bytes` |
+
+| Variable | Query | Purpose |
+|---|---|---|
+| `$route` | `http_route` on `traffic_volume_request_total` for `job="manual-python"` | Filter HTTP panels. Process panels ignore it. |
+
+| Panel | What it shows |
+|---|---|
+| Request rate | `rate(traffic_volume_request_total)` |
+| Error rate | `error_rate` divided by `traffic_volume` (status 400 and above) |
+| Latency p95 | `histogram_quantile` of `http.server.request.duration` |
+| CPU utilization | `process_cpu_utilization_ratio` |
+| Request rate by route | `traffic_volume` grouped by `http_route` |
+| Errors by route and status | `error_rate` grouped by route and status code |
+| Latency p50 / p95 / p99 | Same histogram, three quantiles |
+| Latency p95 by route | p95 grouped by `http_route` |
+| CPU / memory | Gauges sampled every 5 seconds at export time |
