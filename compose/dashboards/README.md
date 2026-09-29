@@ -1,10 +1,11 @@
 # Grafana dashboards
 
-This folder is mounted into Grafana. Four dashboards are provisioned into the **OpenTelemetry** folder:
+This folder is mounted into Grafana. Five dashboards are provisioned into the **OpenTelemetry** folder:
 
 | File | Title | What it shows |
 | --- | --- | --- |
 | `zero-code-node.json` | **OpenTelemetry services** | Any app that exports OTLP. Multi-service RED, Node.js runtime, Tempo, and Loki. |
+| `shop-site.json` | **Shop site** | Only the shop API (`service.name` = `shop-site`). HTTP RED, Node.js runtime, Tempo, and Loki. |
 | `manual-python.json` | **Manual instrumentation — houses** | Only `app4` (`service.name` = `manual-python`). Server spans and the child spans written in code. Built from spanmetrics, not from the app's own instruments. |
 | `manual-python-metrics.json` | **Manual metrics — houses** | Only `app4` (`job` = `manual-python`). Counters, latency histogram, and process gauges recorded in `app4/metrics.py`. |
 | `manual-python-logs.json` | **Manual logs — houses** | Only `app4` (`service_name` = `manual-python`). Log lines recorded through `app4/logs.py` and stored in Loki. |
@@ -13,7 +14,7 @@ This folder is mounted into Grafana. Four dashboards are provisioned into the **
 
 `zero-code-node.json` (uid `zero-code-node`) is the multi-service view.
 
-It is a **multi-service** view: any app that exports OTLP to the collector can appear here. Use the **Service** and **Route** dropdowns at the top to filter almost every panel (for example `zero-code-node`, `zero-code-node-houses`, `zero-code-python`, or **All**).
+It is a **multi-service** view: any app that exports OTLP to the collector can appear here. Use the **Service** and **Route** dropdowns at the top to filter almost every panel (for example `zero-code-node`, `zero-code-node-houses`, `zero-code-python`, `shop-site`, or **All**). The shop API also has its own dashboard, **Shop site**.
 
 Grafana dashboard JSON is strict JSON, so comments cannot live in the file itself. Each panel instead has a **description** (the `i` icon in Grafana). This README lists every metric and what it is for.
 
@@ -267,3 +268,23 @@ The collector's Prometheus exporter turns the OpenTelemetry names into these ser
 | Latency p50 / p95 / p99 | Same histogram, three quantiles |
 | Latency p95 by route | p95 grouped by `http_route` |
 | CPU / memory | Gauges sampled every 5 seconds at export time |
+
+## Shop site
+
+`shop-site.json` (uid `shop-site`) is only for the shop API in `Shopping_site/shop-site/server`. The service name is fixed to `shop-site`. Other apps do not appear here. The shared **OpenTelemetry services** dashboard still lists this service in its Service dropdown.
+
+Zero-code instrumentation is loaded by `npm start` and `npm run dev` (`--require ./otel-register.js` plus `otel.env`). Application source under `index.js`, `routes/`, and `controllers/` is unchanged.
+
+| Variable | Query | Purpose |
+|---|---|---|
+| `$route` | `http_route` on `SPAN_KIND_SERVER` for `shop-site` | Filter HTTP panels and the traces table. Runtime panels ignore it. |
+
+| Panel | What it shows |
+|---|---|
+| Request rate / error rate / p95 / p99 | Inbound Express spans from spanmetrics |
+| HTTP 200 / Not HTTP 200 | Request counts in the selected time range. `200` is an exact status match. Everything else, including 201, 3xx, 4xx, and 5xx, is counted as not 200. |
+| Request rate (timeseries) | Spanmetrics overlaid with `http_server_request_duration_seconds_count{job="shop-site"}` |
+| Request rate by route / p95 by route / status codes | `/api/auth`, `/api/products`, `/api/orders`, `/api/payments`, `/api/health` |
+| Event loop, memory, CPU | Node.js runtime metrics for `job="shop-site"` |
+| Recent traces | Tempo, `resource.service.name = "shop-site"`, optional route filter |
+| Application logs | Loki `{service_name="shop-site"}`. `console.log` is not captured |
