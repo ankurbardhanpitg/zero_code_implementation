@@ -1,12 +1,13 @@
 # Grafana dashboards
 
-This folder is mounted into Grafana. Three dashboards are provisioned into the **OpenTelemetry** folder:
+This folder is mounted into Grafana. Four dashboards are provisioned into the **OpenTelemetry** folder:
 
 | File | Title | What it shows |
 | --- | --- | --- |
 | `zero-code-node.json` | **OpenTelemetry services** | Any app that exports OTLP. Multi-service RED, Node.js runtime, Tempo, and Loki. |
 | `manual-python.json` | **Manual instrumentation — houses** | Only `app4` (`service.name` = `manual-python`). Server spans and the child spans written in code. Built from spanmetrics, not from the app's own instruments. |
 | `manual-python-metrics.json` | **Manual metrics — houses** | Only `app4` (`job` = `manual-python`). Counters, latency histogram, and process gauges recorded in `app4/metrics.py`. |
+| `manual-python-logs.json` | **Manual logs — houses** | Only `app4` (`service_name` = `manual-python`). Log lines recorded through `app4/logs.py` and stored in Loki. |
 
 ## OpenTelemetry services
 
@@ -219,7 +220,23 @@ The same spanmetrics series are used (`traces_spanmetrics_calls_total` and `trac
 | Recent server traces | Tempo, filtered by route |
 | Traces containing the manual span | Tempo, filtered by child span name |
 
-`house.id` and `house.found` are attributes on the `houses.get_by_id` span. They show up in the Tempo waterfall. They are not Prometheus labels. This app does not export logs.
+`house.id` and `house.found` are attributes on the `houses.get_by_id` span. They show up in the Tempo waterfall. They are not Prometheus labels.
+
+## Manual logs — houses
+
+`manual-python-logs.json` (uid `manual-python-logs`) is the logs view for **app4**. It queries Loki. The app bridges Python `logging` to OpenTelemetry in `app4/logs.py` and exports OTLP to the collector, which forwards logs to Loki.
+
+| Variable | Values | Purpose |
+|---|---|---|
+| `$level` | INFO, WARN, ERROR, FATAL, or All | Filter every panel except the warning-and-error stat |
+
+| Panel | What it shows |
+|---|---|
+| Log rate | Lines per second for the selected level |
+| Warning and error rate | WARN, ERROR, and FATAL lines per second |
+| Lines in range | Count of lines in the dashboard time range |
+| Log volume by level | The same lines, stacked by `detected_level` |
+| Application logs | The log stream. Expand a line for `trace_id`, which links to Tempo |
 
 ## Manual metrics — houses
 

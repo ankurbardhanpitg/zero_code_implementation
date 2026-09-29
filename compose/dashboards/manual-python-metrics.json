@@ -28,6 +28,18 @@
       "tooltip": "Open Manual instrumentation — houses",
       "type": "link",
       "url": "/d/manual-python"
+    },
+    {
+      "asDropdown": false,
+      "icon": "gf-logs",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Logs dashboard",
+      "tooltip": "Open Manual logs — houses",
+      "type": "link",
+      "url": "/d/manual-python-logs"
     }
   ],
   "liveNow": true,

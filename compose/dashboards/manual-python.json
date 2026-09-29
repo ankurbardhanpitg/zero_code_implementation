@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "Manual tracing for the Flask house API (app4, service manual-python). Server spans and child spans are created in application code. No auto-instrumentation, no runtime metrics, no logs.",
+  "description": "Manual tracing for the Flask house API (app4, service manual-python). Server spans and child spans are created in application code. Logs are on the Manual logs — houses dashboard.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -28,6 +28,18 @@
       "tooltip": "Open Tempo Explore for manual-python",
       "type": "link",
       "url": "/explore?left=%7B%22datasource%22%3A%22tempo%22%2C%22queries%22%3A%5B%7B%22queryType%22%3A%22traceql%22%2C%22query%22%3A%22%7B%20resource.service.name%20%3D%20%5C%22manual-python%5C%22%20%7D%22%7D%5D%7D"
+    },
+    {
+      "asDropdown": false,
+      "icon": "gf-logs",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Logs dashboard",
+      "tooltip": "Open Manual logs — houses",
+      "type": "link",
+      "url": "/d/manual-python-logs"
     }
   ],
   "liveNow": true,

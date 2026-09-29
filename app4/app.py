@@ -6,21 +6,25 @@ Trace setup for one request:
      modules are imported. store.py calls trace.get_tracer() at import time,
      so the provider has to be in place first or that call receives the
      default proxy tracer.
-  2. init_metrics() installs the global MeterProvider. It does not change
+  2. init_logging() installs the LoggerProvider and attaches LoggingHandler
+     to the root logger. It does not change the tracer. logging calls made
+     inside a span pick up that span's trace id.
+  3. init_metrics() installs the global MeterProvider. It does not change
      the tracer. The HTTP instruments it returns are recorded by the
      request hooks below.
-  3. before_request extracts W3C trace context from the incoming headers and
+  4. before_request extracts W3C trace context from the incoming headers and
      attaches it, then counts the request. server_span() does not take an
      explicit parent; it uses whatever context is current, so a traceparent
      on the request becomes the parent of the SERVER span.
-  4. The view runs inside server_span()'s with-block. Child spans opened by
+  5. The view runs inside server_span()'s with-block. Child spans opened by
      store.py inherit that SERVER span the same way.
-  5. after_request records latency and, for status 400 and above, an error.
+  6. after_request records latency and, for status 400 and above, an error.
      teardown_request records a 500 when the view raises before after_request
      runs, then detaches the trace context so the next request on this
      worker thread does not keep this trace.
 """
 
+import logging
 import os
 import time
 
@@ -28,11 +32,15 @@ from flask import Flask, Response, jsonify, request
 from opentelemetry import context
 from opentelemetry.propagate import extract
 
+from logs import init_logging
 from metrics import init_metrics
 from tracing import init_tracing, server_span
 
 init_tracing()
+init_logging()
 request_instruments = init_metrics()
+
+logger = logging.getLogger(__name__)
 
 # Imported after init_tracing() on purpose; see the module docstring.
 from modules.house.routes import house_bp  # noqa: E402
@@ -154,6 +162,8 @@ def restore_context_on_teardown(err):
 @server_span("/")
 def health():
     # Recorded as a SERVER span named "GET /". See tracing.server_span.
+    # The log is emitted inside that span, so the record carries its trace id.
+    logger.info("House API health check")
     return jsonify(
         {
             "message": "House API is running",
