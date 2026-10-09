@@ -1,6 +1,8 @@
 # Kubernetes Observability Stack (Docker Desktop)
 
-Deploys the same stack as `compose/` onto Docker Desktop Kubernetes:
+Self-contained under `k8s/` (no dependency on `compose/` files at apply time).
+
+Deploys:
 
 - OpenTelemetry Collector
 - Prometheus
@@ -20,7 +22,13 @@ docker compose -f compose/compose.yaml down
 
 ## Deploy
 
-From the repo root:
+From the `k8s` folder:
+
+```powershell
+.\apply.ps1
+```
+
+Or from the repo root:
 
 ```powershell
 kubectl apply -k k8s
@@ -68,12 +76,18 @@ kubectl logs -n observability deploy/grafana -f
 ## Tear down
 
 ```powershell
+.\delete.ps1
+```
+
+Or:
+
+```powershell
 kubectl delete -k k8s
 ```
 
 ## Notes
 
-- Runtime configs live under `k8s/config/` (copied from `compose/` so Kustomize can load them).
-- If you change Compose configs, copy the updated files into `k8s/config/` again, then re-apply.
+- All runtime configs live under `k8s/config/` (collector, prometheus, loki, tempo, grafana).
+- Edit files only inside `k8s/` for the Kubernetes stack; Compose keeps its own configs under `compose/`.
 - Storage uses `emptyDir` (data is lost when pods restart). Fine for local study.
-- Service names match Compose (`otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`), so existing configs keep working.
+- Service names match Compose (`otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`).
