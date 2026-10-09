@@ -1,0 +1,265 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Manual logs for the Flask house API (app4, service manual-python). Python logging calls are bridged to OpenTelemetry in app4/logs.py and exported OTLP to Loki. Open a log line to see trace_id; that label links to Tempo.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "bolt",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Trace dashboard",
+      "tooltip": "Open Manual instrumentation — houses",
+      "type": "link",
+      "url": "/d/manual-python"
+    },
+    {
+      "asDropdown": false,
+      "icon": "bolt",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Metrics dashboard",
+      "tooltip": "Open Manual metrics — houses",
+      "type": "link",
+      "url": "/d/manual-python-metrics"
+    }
+  ],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "Log lines per second for manual-python. Filtered by the Level dropdown. Records come from logging calls in app.py and modules/house/controller.py.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "cps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum(rate({service_name=\"manual-python\", detected_level=~\"$level\"}[$__auto]))",
+          "legendFormat": "lines",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Log rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "WARN, ERROR, and FATAL lines per second. This panel ignores the Level dropdown so a filter of INFO still shows whether warnings are being emitted. A missing house logs a warning.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.1 }
+            ]
+          },
+          "unit": "cps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum(rate({service_name=\"manual-python\", detected_level=~\"WARN|ERROR|FATAL\"}[$__auto]))",
+          "legendFormat": "warnings",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Warning and error rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "Count of log lines in the dashboard time range, filtered by Level.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service_name=\"manual-python\", detected_level=~\"$level\"}[$__range]))",
+          "legendFormat": "lines",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Lines in range",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "Log lines per interval, grouped by detected_level. INFO is a successful lookup or the health check. WARN is a house id that was not found.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "INFO" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "WARN" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "ERROR" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+      "id": 4,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (detected_level) (count_over_time({service_name=\"manual-python\", detected_level=~\"$level\"}[$__auto]))",
+          "legendFormat": "{{detected_level}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Log volume by level",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "OTLP logs for service_name=manual-python. Expand a line to read trace_id and span_id. trace_id opens the matching trace in Tempo. house_id and house_count are attributes passed through logging extra.",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 12 },
+      "id": 5,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "{service_name=\"manual-python\", detected_level=~\"$level\"}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Application logs",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["opentelemetry", "manual", "flask", "loki"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Level",
+        "multi": false,
+        "name": "level",
+        "options": [
+          { "selected": true, "text": "All", "value": "$__all" },
+          { "selected": false, "text": "INFO", "value": "INFO" },
+          { "selected": false, "text": "WARN", "value": "WARN" },
+          { "selected": false, "text": "ERROR", "value": "ERROR" },
+          { "selected": false, "text": "FATAL", "value": "FATAL" }
+        ],
+        "query": "INFO,WARN,ERROR,FATAL",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Manual logs — houses",
+  "uid": "manual-python-logs",
+  "version": 1
+}
